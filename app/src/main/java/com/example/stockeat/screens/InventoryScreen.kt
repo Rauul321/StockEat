@@ -1,0 +1,577 @@
+package com.example.stockeat.screens
+
+import android.R.attr.enabled
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DocumentScanner
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage
+import com.example.stockeat.Ingredient
+import com.example.stockeat.R
+import com.example.stockeat.viewmodels.InventoryViewModel
+import com.example.stockeat.ui.components.BarcodeScannerView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditIngredient(
+    ingredientId: Int,
+    currentName: String,
+    currentQuantity: Double,
+    currentUnit: String,
+    currentExpiryDate: Long?,
+    currentImageUrl: String?,
+    onUpdate: (Ingredient) -> Unit,
+    onCancel: () -> Unit
+){
+    var name by remember { mutableStateOf(currentName) }
+    var quantity by remember { mutableStateOf(currentQuantity.toString())}
+    var unit by remember { mutableStateOf(currentUnit)}
+    var expiryDate by remember { mutableStateOf(currentExpiryDate) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = expiryDate)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .imePadding()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Edit Ingredient",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        OutlinedTextField(
+            value = name,
+            onValueChange = {name = it },
+            label = {Text("Ingredient Name", style = MaterialTheme.typography.bodySmall)},
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = quantity,
+                onValueChange = {quantity = it },
+                label = {Text("Quantity", style = MaterialTheme.typography.bodySmall)},
+                modifier = Modifier.weight(1f)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+            UnitDropdown(
+                selectedUnit = unit,
+                onUnitSelected = { unit = it },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // --- Botón Fecha Caducidad ---
+        OutlinedTextField(
+            value = if (expiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expiryDate!!)) else "Sin fecha",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Fecha de Caducidad") },
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                IconButton(onClick = { showDatePicker = true }) {
+                    Icon(Icons.Default.Edit, contentDescription = "Seleccionar fecha")
+                }
+            }
+        )
+
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        expiryDate = datePickerState.selectedDateMillis
+                        showDatePicker = false
+                    }) { Text("Aceptar") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(
+                onClick = onCancel,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error // O puedes usar un color fijo: Color.Red
+                )
+            ) {
+                Text("Cancel", style = MaterialTheme.typography.bodyMedium)
+            }
+            TextButton(
+                onClick = {
+                    val ingredientUpdated = Ingredient(
+                        id = ingredientId,
+                        nombre = name,
+                        cantidad = quantity.toDouble(),
+                        unidad = unit,
+                        expiryDate = expiryDate,
+                        imageUrl = currentImageUrl
+                    )
+
+                    onUpdate(ingredientUpdated)
+
+                },
+                enabled = name.isNotBlank() && quantity.isNotBlank(),
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onPrimary, // O puedes usar un color fijo: Color.Red
+                )
+            ) {
+                Text("Save", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UnitDropdown(
+    selectedUnit: String,
+    onUnitSelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val options = listOf("ud", "g", "mg", "kg", "ml", "l", "Otros")
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            value = selectedUnit,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Unidad") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onUnitSelected(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun InventoryScreen(viewModel: InventoryViewModel) {
+    // 1. Estado: Escuchamos a la base de datos
+    val listaIngredientes by viewModel.ingredients.collectAsState(initial = emptyList())
+
+    // 2. Estado local: Para lo que el usuario escribe en los campos
+    var showModal by remember { mutableStateOf(false) }
+    var ingredientToEdit by remember { mutableStateOf<Ingredient?>(null) }
+    var name by remember { mutableStateOf("") }
+    var quantity by remember { mutableStateOf("") }
+    var selectedUnit by remember { mutableStateOf("ud") }
+    var showScanner by remember { mutableStateOf(false) }
+    var expiryDate by remember { mutableStateOf<Long?>(null) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var ingredientToConsume by remember { mutableStateOf<Ingredient?>(null) }
+    var showQuantityModal by remember { mutableStateOf(false) }
+    var consumptionAmount by remember { mutableStateOf("") }
+    var showExhaustedDialog by remember { mutableStateOf(false) }
+    var exhaustedIngredient by remember { mutableStateOf<Ingredient?>(null) }
+    var scannedImageUrl by remember { mutableStateOf<String?>(null) }
+
+    val datePickerState = rememberDatePickerState()
+
+    // Scaffold nos da la estructura básica (barra superior, botones flotantes, etc.)
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Mi Despensa", style = MaterialTheme.typography.headlineMedium) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+            // --- SECCIÓN: FORMULARIO ---
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("¿Qué has comprado?") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = quantity,
+                            onValueChange = { quantity = it },
+                            label = { Text("Cantidad") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        UnitDropdown(
+                            selectedUnit = selectedUnit,
+                            onUnitSelected = { selectedUnit = it },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // --- Selector de Fecha ---
+                    OutlinedTextField(
+                        value = if (expiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expiryDate!!)) else "Fecha de caducidad",
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            IconButton(onClick = { showDatePicker = true }) {
+                                Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                            }
+                        }
+                    )
+
+                    if (showDatePicker) {
+                        DatePickerDialog(
+                            onDismissRequest = { showDatePicker = false },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    expiryDate = datePickerState.selectedDateMillis
+                                    showDatePicker = false
+                                }) { Text("Aceptar") }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                            }
+                        ) {
+                            DatePicker(state = datePickerState)
+                        }
+                    }
+
+                    // Dentro de InventoryScreen
+                    val cameraPermissionLauncher =
+                        rememberLauncherForActivityResult(
+                            ActivityResultContracts.RequestPermission()
+                    ) { isGranted ->
+                        if (isGranted) showScanner = true
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = {
+                            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+                        }
+                    ) {
+                        Text("Scan barcode", style = MaterialTheme.typography.bodyMedium)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.Default.DocumentScanner, contentDescription = "Escanear")
+                    }
+
+                    if (showScanner) {
+                        BarcodeScannerView(onBarcodeDetected = { code ->
+                            showScanner = false
+                            viewModel.scanProduct(code) { productName, imageUrl ->
+                                name = productName
+                                scannedImageUrl = imageUrl
+                            }
+                        })
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = {
+                            val qty = quantity.toDoubleOrNull() ?: 0.0
+                            if (name.isNotBlank()) {
+                                viewModel.addIngredient(name, qty, selectedUnit, false, expiryDate, scannedImageUrl)
+                                name = ""; quantity = ""; selectedUnit = "ud"; expiryDate = null; scannedImageUrl = null // Limpiar campos
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Añadir al Inventario",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // --- SECCIÓN: LISTADO ---
+            Text(text = "Tus Ingredientes", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(listaIngredientes) { ingrediente ->
+                    // Llamamos a una función separada para la tarjeta
+                    IngredienteItem(
+                        ingrediente = ingrediente,
+                        onDelete = { viewModel.deleteIngredient(ingrediente) },
+                        onEditIngredient = {
+                            ingredientToEdit = ingrediente
+                            showModal = true
+                        },
+                        viewModel = viewModel,
+                        onConsume = {
+                            ingredientToConsume = ingrediente
+                            showQuantityModal = true
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    if(showModal && ingredientToEdit != null) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showModal = false
+                ingredientToEdit = null
+            }
+        ) {
+            EditIngredient(
+                ingredientId = ingredientToEdit!!.id,
+                currentName = ingredientToEdit!!.nombre,
+                currentQuantity = ingredientToEdit!!.cantidad,
+                currentUnit = ingredientToEdit!!.unidad,
+                currentExpiryDate = ingredientToEdit!!.expiryDate,
+                currentImageUrl = ingredientToEdit!!.imageUrl,
+                onUpdate = { updatedIngredient ->
+                    viewModel.updateIngredient(updatedIngredient)
+                    showModal = false
+                    ingredientToEdit = null
+                },
+                onCancel = { showModal = false; ingredientToEdit = null }
+            )
+        }
+    }
+
+    if (showQuantityModal && ingredientToConsume != null) {
+        AlertDialog(
+            onDismissRequest = { 
+                showQuantityModal = false 
+                consumptionAmount = ""
+            },
+            title = { Text("Consumir ${ingredientToConsume!!.nombre}") },
+            text = {
+                Column {
+                    Text("¿Cuánto has usado? (Disponible: ${ingredientToConsume!!.cantidad} ${ingredientToConsume!!.unidad})")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = consumptionAmount,
+                        onValueChange = { consumptionAmount = it },
+                        label = { Text("Cantidad a descontar") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val amount = consumptionAmount.toDoubleOrNull() ?: 0.0
+                        viewModel.consumeIngredient(
+                            ingredient = ingredientToConsume!!,
+                            amountToConsume = amount,
+                            onExhausted = { updatedIngredient ->
+                                exhaustedIngredient = updatedIngredient
+                                showExhaustedDialog = true
+                            }
+                        )
+                        showQuantityModal = false
+                        consumptionAmount = ""
+                    },
+                    enabled = consumptionAmount.isNotBlank() && (consumptionAmount.toDoubleOrNull() ?: 0.0) > 0
+                ) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { 
+                    showQuantityModal = false
+                    consumptionAmount = ""
+                }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    if (showExhaustedDialog && exhaustedIngredient != null) {
+        AlertDialog(
+            onDismissRequest = { 
+                viewModel.updateIngredient(exhaustedIngredient!!)
+                showExhaustedDialog = false 
+            },
+            title = { Text("Producto Agotado") },
+            text = { Text("Has terminado el stock de ${exhaustedIngredient!!.nombre}. ¿Quieres añadirlo a la lista de la compra?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.moveToShoppingList(exhaustedIngredient!!)
+                    showExhaustedDialog = false
+                }) { Text("Sí, añadir") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.updateIngredient(exhaustedIngredient!!)
+                    showExhaustedDialog = false
+                }) { Text("No, solo agotar") }
+            }
+        )
+    }
+}
+
+@Composable
+fun IngredienteItem(ingrediente: Ingredient, onDelete: () -> Unit, onEditIngredient: () -> Unit, viewModel: InventoryViewModel, onConsume: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = ingrediente.imageUrl, // La URL guardada
+                contentDescription = null,
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(R.drawable.ic_launcher_background) // Imagen por defecto
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = ingrediente.nombre, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = "Cantidad: ${ingrediente.cantidad} ${ingrediente.unidad}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (ingrediente.cantidad < 1) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                // Fecha de Caducidad
+                if (ingrediente.expiryDate != null) {
+                    val isExpired = ingrediente.expiryDate!! < System.currentTimeMillis()
+                    Text(
+                        text = "Caduca: ${viewModel.formatDate(ingrediente.expiryDate)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isExpired) Color.Red else Color.Gray
+                    )
+                }
+            }
+            IconButton(onClick = onEditIngredient) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
+            }
+            IconButton(onClick = onConsume) {
+                Icon(Icons.Default.Restaurant, contentDescription = "Consume", tint = MaterialTheme.colorScheme.tertiary)
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = Color.Red)
+            }
+        }
+    }
+}
