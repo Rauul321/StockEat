@@ -1,5 +1,6 @@
 package com.example.stockeat
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,19 +13,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.stockeat.screens.InventoryScreen
 import com.example.stockeat.screens.ReceipesScreen
 import com.example.stockeat.viewmodels.RecipeViewModel
 import com.example.stockeat.screens.ShoppingListScreen
 import com.example.stockeat.ui.theme.StockEatTheme
+import com.example.stockeat.utils.ExpiryWorker
 import com.example.stockeat.viewmodels.InventoryViewModel
 import com.example.stockeat.viewmodels.ShoppingListViewModel
+import java.util.concurrent.TimeUnit
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object ShoppingList : Screen("shopping", "Shopping List", Icons.Default.ShoppingCart)
@@ -35,6 +43,29 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                101
+            )
+        }
+
+        // Programar la revisión de caducidad una vez al día
+        val expiryWorkRequest = PeriodicWorkRequestBuilder<ExpiryWorker>(
+            24, TimeUnit.HOURS
+        ).build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "expiry_check",
+            ExistingPeriodicWorkPolicy.KEEP, // Mantiene el horario si ya existe
+            expiryWorkRequest
+        )
+
+        // Tarea de prueba inmediata para verificar que las notificaciones funcionan
+        val testRequest = OneTimeWorkRequestBuilder<ExpiryWorker>().build()
+        WorkManager.getInstance(this).enqueue(testRequest)
 
         val db = StockEatDatabase.getDatabase(this)
         val ingredientDao = db.ingredientDao()

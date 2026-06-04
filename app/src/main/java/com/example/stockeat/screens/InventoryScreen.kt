@@ -68,6 +68,9 @@ import com.example.stockeat.Ingredient
 import com.example.stockeat.R
 import com.example.stockeat.viewmodels.InventoryViewModel
 import com.example.stockeat.ui.components.BarcodeScannerView
+import com.example.stockeat.ui.theme.GreenDarkText
+import com.example.stockeat.ui.theme.RedPastelExpired
+import com.example.stockeat.ui.theme.YellowPastelExpiry
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -525,52 +528,90 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
 
 @Composable
 fun IngredienteItem(ingrediente: Ingredient, onDelete: () -> Unit, onEditIngredient: () -> Unit, viewModel: InventoryViewModel, onConsume: () -> Unit) {
+
+    val now = System.currentTimeMillis()
+    val daysRemaining = if (ingrediente.expiryDate != null) {
+        val diff = ingrediente.expiryDate - now
+        diff / (24 * 60 * 60 * 1000)
+    } else {
+        Long.MAX_VALUE
+    }
+
+    val isExpired = daysRemaining < 0
+    val isNearExpiry = daysRemaining in 0..2
+    val hasAlert = isExpired || isNearExpiry
+
+    val cardBackgroundColor = when {
+        isExpired -> RedPastelExpired
+        isNearExpiry -> YellowPastelExpiry
+        else -> MaterialTheme.colorScheme.surface
+    }
+
+    // Color de texto e iconos: GreenDarkText ofrece el mejor contraste en los tonos pastel
+    val contentColor = if (hasAlert) GreenDarkText else MaterialTheme.colorScheme.onSurface
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = ingrediente.imageUrl, // La URL guardada
+                model = ingrediente.imageUrl,
                 contentDescription = null,
                 modifier = Modifier
                     .size(60.dp)
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop,
-                placeholder = painterResource(R.drawable.ic_launcher_background) // Imagen por defecto
+                placeholder = painterResource(R.drawable.ic_launcher_background)
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = ingrediente.nombre, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = ingrediente.nombre,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = contentColor
+                )
                 Text(
                     text = "Cantidad: ${ingrediente.cantidad} ${ingrediente.unidad}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (ingrediente.cantidad < 1) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (ingrediente.cantidad < 1 && !hasAlert) Color.Red else contentColor.copy(alpha = 0.8f)
                 )
-                // Fecha de Caducidad
+                
                 if (ingrediente.expiryDate != null) {
-                    val isExpired = ingrediente.expiryDate!! < System.currentTimeMillis()
                     Text(
-                        text = "Caduca: ${viewModel.formatDate(ingrediente.expiryDate)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (isExpired) Color.Red else Color.Gray
+                        text = if (isExpired) "¡CADUCADO!" else "Caduca: ${viewModel.formatDate(ingrediente.expiryDate)}",
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = if (hasAlert) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal),
+                        color = contentColor
                     )
                 }
             }
+            
             IconButton(onClick = onEditIngredient) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = if (hasAlert) GreenDarkText else MaterialTheme.colorScheme.primary
+                )
             }
             IconButton(onClick = onConsume) {
-                Icon(Icons.Default.Restaurant, contentDescription = "Consume", tint = MaterialTheme.colorScheme.tertiary)
+                Icon(
+                    Icons.Default.Restaurant,
+                    contentDescription = "Consume",
+                    tint = if (hasAlert) GreenDarkText else MaterialTheme.colorScheme.tertiary
+                )
             }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = Color.Red)
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Borrar",
+                    tint = if (hasAlert) GreenDarkText else Color.Red
+                )
             }
         }
     }

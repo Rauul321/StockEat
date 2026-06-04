@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface IngredientDao {
-    @Query("SELECT * FROM ingredients_table WHERE toBuy = 0")
+    @Query("SELECT * FROM ingredients_table WHERE toBuy = 0 ORDER BY expiryDate")
     fun getAllIngredients(): Flow<List<Ingredient>>
 
     @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
@@ -22,6 +22,9 @@ interface IngredientDao {
 
     @Delete
     suspend fun deleteIngredient(ingredient: Ingredient)
+
+    @Query("SELECT * FROM ingredients_table WHERE toBuy = 0")
+    suspend fun getInventoryList(): List<Ingredient>
 
     @Query("SELECT * FROM ingredients_table WHERE toBuy = 1")
     fun getShoppingList(): Flow<List<Ingredient>>

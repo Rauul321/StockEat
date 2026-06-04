@@ -79,4 +79,7 @@ dependencies {
 
     // Coil
     implementation(libs.coil.compose)
+
+    // WorkManager para notificaciones
+    implementation(libs.androidx.work.runtime)
 }

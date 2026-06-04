@@ -14,3 +14,7 @@ val GreenDarkText = Color(0xFF1B3D1B)      // Verde oscuro para máxima legibili
 val WhitePure = Color(0xFFFFFFFF)          // Blanco para Cards y superficies
 val WhiteBackground = Color(0xFFF7FAF7)    // Blanco roto con matiz verde para el fondo
 val SoftOutline = Color(0xFFDDE3DD)        // Para bordes finos y divisores
+
+// Tonos de Advertencia (Caducidad)
+val YellowPastelExpiry = Color(0xFFEFE58A) // Amarillo pastel suave
+val RedPastelExpired = Color(0xFFF6465C)   // Rojo pastel suave
