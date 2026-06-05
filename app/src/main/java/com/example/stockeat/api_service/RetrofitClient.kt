@@ -9,14 +9,14 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
 
 
-    private const val BASE_URL = "http://192.168.1.6:5000\n"
+    private const val BASE_URL = "http://10.165.0.49:5000"
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
 
     private val okHttpClient = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS) // Tiempo para conectar al servidor
-        .readTimeout(30, TimeUnit.SECONDS)    // Tiempo para esperar la respuesta de la IA
+        .connectTimeout(120, TimeUnit.SECONDS) // Tiempo para conectar al servidor
+        .readTimeout(120, TimeUnit.SECONDS)    // Tiempo para esperar la respuesta de la IA
         .build()
 
     val instance: ApiService by lazy {

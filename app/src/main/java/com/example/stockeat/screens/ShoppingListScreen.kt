@@ -47,7 +47,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Lista de la Compra", style = MaterialTheme.typography.headlineMedium) },
+                title = { Text("Shopping List", style = MaterialTheme.typography.headlineMedium) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
@@ -63,7 +63,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
             // --- SECCIÓN: AÑADIR ITEM ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Row(
@@ -73,7 +73,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                         OutlinedTextField(
                             value = itemName,
                             onValueChange = { itemName = it },
-                            label = { Text("¿Qué necesitas comprar?") },
+                            label = { Text("What do you need to buy?") },
                             modifier = Modifier.weight(1f),
                             singleLine = true
                         )
@@ -89,27 +89,8 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                             colors = IconButtonDefaults.filledIconButtonColors(),
                             enabled = itemName.isNotBlank()
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = "Añadir")
+                            Icon(Icons.Default.Add, contentDescription = "Add")
                         }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = itemQuantity,
-                            onValueChange = { itemQuantity = it },
-                            label = { Text("Cantidad") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        UnitDropdown(
-                            selectedUnit = itemUnit,
-                            onUnitSelected = { itemUnit = it },
-                            modifier = Modifier.weight(1f)
-                        )
                     }
                 }
             }
@@ -117,7 +98,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- SECCIÓN: LISTADO ---
-            Text(text = "Artículos para comprar", style = MaterialTheme.typography.titleLarge)
+            Text(text = "Products to buy", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(
@@ -149,16 +130,16 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                 showPurchaseModal = false 
                 expiryDate = null
             },
-            title = { Text("Comprar ${selectedIngredient!!.nombre}") },
+            title = { Text("Buy ${selectedIngredient!!.nombre}") },
             text = {
                 Column {
-                    Text("Introduce los detalles del producto comprado:")
+                    Text("Specify the product details:")
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     OutlinedTextField(
                         value = purchaseQuantity,
                         onValueChange = { purchaseQuantity = it },
-                        label = { Text("Cantidad (${selectedIngredient!!.unidad})") },
+                        label = { Text("Quantity (${selectedIngredient!!.unidad})") },
                         modifier = Modifier.fillMaxWidth()
                     )
                     
@@ -169,7 +150,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                         value = if (expiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expiryDate!!)) else "Sin fecha",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Fecha de caducidad") },
+                        label = { Text("Expiry Date") },
                         modifier = Modifier.fillMaxWidth(),
                         trailingIcon = {
                             IconButton(onClick = { showDatePicker = true }) {
@@ -185,10 +166,10 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                                 TextButton(onClick = {
                                     expiryDate = datePickerState.selectedDateMillis
                                     showDatePicker = false
-                                }) { Text("Aceptar") }
+                                }) { Text("Accept") }
                             },
                             dismissButton = {
-                                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
                             }
                         ) {
                             DatePicker(state = datePickerState)
@@ -206,13 +187,13 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                     ))
                     showPurchaseModal = false
                     expiryDate = null
-                }) { Text("Añadir al Inventario") }
+                }) { Text("Add to Inventory") }
             },
             dismissButton = {
                 TextButton(onClick = { 
                     showPurchaseModal = false
                     expiryDate = null
-                }) { Text("Cancelar") }
+                }) { Text("Cancel") }
             }
         )
     }
@@ -255,7 +236,7 @@ fun ShoppingListItem(
                 style = MaterialTheme.typography.bodyLarge
             )
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = Color.Red)
+                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
             }
         }
     }

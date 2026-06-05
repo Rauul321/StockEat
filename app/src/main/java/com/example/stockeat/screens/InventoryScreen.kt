@@ -136,14 +136,14 @@ fun EditIngredient(
 
         // --- Botón Fecha Caducidad ---
         OutlinedTextField(
-            value = if (expiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expiryDate!!)) else "Sin fecha",
+            value = if (expiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expiryDate!!)) else "Date not specified",
             onValueChange = {},
             readOnly = true,
-            label = { Text("Fecha de Caducidad") },
+            label = { Text("Expiry date") },
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
                 IconButton(onClick = { showDatePicker = true }) {
-                    Icon(Icons.Default.Edit, contentDescription = "Seleccionar fecha")
+                    Icon(Icons.Default.Edit, contentDescription = "Select date")
                 }
             }
         )
@@ -155,10 +155,10 @@ fun EditIngredient(
                     TextButton(onClick = {
                         expiryDate = datePickerState.selectedDateMillis
                         showDatePicker = false
-                    }) { Text("Aceptar") }
+                    }) { Text("Accept") }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                    TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
                 }
             ) {
                 DatePicker(state = datePickerState)
@@ -227,7 +227,7 @@ fun UnitDropdown(
             value = selectedUnit,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Unidad") },
+            label = { Text("Unit") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
         )
 
@@ -276,7 +276,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Mi Despensa", style = MaterialTheme.typography.headlineMedium) },
+                title = { Text("My Inventory", style = MaterialTheme.typography.headlineMedium) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
@@ -293,13 +293,13 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
             // --- SECCIÓN: FORMULARIO ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     OutlinedTextField(
                         value = name,
                         onValueChange = { name = it },
-                        label = { Text("¿Qué has comprado?") },
+                        label = { Text("What have you bought?") },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -310,7 +310,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                         OutlinedTextField(
                             value = quantity,
                             onValueChange = { quantity = it },
-                            label = { Text("Cantidad") },
+                            label = { Text("Quantity") },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -325,13 +325,13 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
 
                     // --- Selector de Fecha ---
                     OutlinedTextField(
-                        value = if (expiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expiryDate!!)) else "Fecha de caducidad",
+                        value = if (expiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expiryDate!!)) else "Expiry Date",
                         onValueChange = {},
                         readOnly = true,
                         modifier = Modifier.fillMaxWidth(),
                         trailingIcon = {
                             IconButton(onClick = { showDatePicker = true }) {
-                                Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                                Icon(Icons.Default.DateRange, contentDescription = "Select Date")
                             }
                         }
                     )
@@ -394,7 +394,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "Añadir al Inventario",
+                            text = "Add to Inventory",
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -404,7 +404,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- SECCIÓN: LISTADO ---
-            Text(text = "Tus Ingredientes", style = MaterialTheme.typography.titleLarge)
+            Text(text = "Your Products", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -458,15 +458,15 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                 showQuantityModal = false 
                 consumptionAmount = ""
             },
-            title = { Text("Consumir ${ingredientToConsume!!.nombre}") },
+            title = { Text("Consume ${ingredientToConsume!!.nombre}") },
             text = {
                 Column {
-                    Text("¿Cuánto has usado? (Disponible: ${ingredientToConsume!!.cantidad} ${ingredientToConsume!!.unidad})")
+                    Text("How much have you used? (Available: ${ingredientToConsume!!.cantidad} ${ingredientToConsume!!.unidad})")
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = consumptionAmount,
                         onValueChange = { consumptionAmount = it },
-                        label = { Text("Cantidad a descontar") },
+                        label = { Text("Amount to substract") },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -488,7 +488,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                     },
                     enabled = consumptionAmount.isNotBlank() && (consumptionAmount.toDoubleOrNull() ?: 0.0) > 0
                 ) {
-                    Text("Confirmar")
+                    Text("Confirm")
                 }
             },
             dismissButton = {
@@ -496,7 +496,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                     showQuantityModal = false
                     consumptionAmount = ""
                 }) {
-                    Text("Cancelar")
+                    Text("Cancel")
                 }
             }
         )
@@ -508,19 +508,19 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                 viewModel.updateIngredient(exhaustedIngredient!!)
                 showExhaustedDialog = false 
             },
-            title = { Text("Producto Agotado") },
-            text = { Text("Has terminado el stock de ${exhaustedIngredient!!.nombre}. ¿Quieres añadirlo a la lista de la compra?") },
+            title = { Text("Product out of stock") },
+            text = { Text("The stock of ${exhaustedIngredient!!.nombre} ran out. Do you want to add the product to the shopping list?") },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.moveToShoppingList(exhaustedIngredient!!)
                     showExhaustedDialog = false
-                }) { Text("Sí, añadir") }
+                }) { Text("Yes, add it") }
             },
             dismissButton = {
                 TextButton(onClick = {
                     viewModel.updateIngredient(exhaustedIngredient!!)
                     showExhaustedDialog = false
-                }) { Text("No, solo agotar") }
+                }) { Text("No, leave it") }
             }
         )
     }
@@ -544,7 +544,7 @@ fun IngredienteItem(ingrediente: Ingredient, onDelete: () -> Unit, onEditIngredi
     val cardBackgroundColor = when {
         isExpired -> RedPastelExpired
         isNearExpiry -> YellowPastelExpiry
-        else -> MaterialTheme.colorScheme.surface
+        else -> MaterialTheme.colorScheme.surfaceVariant
     }
 
     // Color de texto e iconos: GreenDarkText ofrece el mejor contraste en los tonos pastel
@@ -578,14 +578,14 @@ fun IngredienteItem(ingrediente: Ingredient, onDelete: () -> Unit, onEditIngredi
                     color = contentColor
                 )
                 Text(
-                    text = "Cantidad: ${ingrediente.cantidad} ${ingrediente.unidad}",
+                    text = "Quantity: ${ingrediente.cantidad} ${ingrediente.unidad}",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (ingrediente.cantidad < 1 && !hasAlert) Color.Red else contentColor.copy(alpha = 0.8f)
                 )
                 
                 if (ingrediente.expiryDate != null) {
                     Text(
-                        text = if (isExpired) "¡CADUCADO!" else "Caduca: ${viewModel.formatDate(ingrediente.expiryDate)}",
+                        text = if (isExpired) "EXPIRED!" else "Expires: ${viewModel.formatDate(ingrediente.expiryDate)}",
                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = if (hasAlert) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal),
                         color = contentColor
                     )
@@ -603,14 +603,14 @@ fun IngredienteItem(ingrediente: Ingredient, onDelete: () -> Unit, onEditIngredi
                 Icon(
                     Icons.Default.Restaurant,
                     contentDescription = "Consume",
-                    tint = if (hasAlert) GreenDarkText else MaterialTheme.colorScheme.tertiary
+                    tint = if (hasAlert) GreenDarkText else MaterialTheme.colorScheme.primary
                 )
             }
             IconButton(onClick = onDelete) {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = "Borrar",
-                    tint = if (hasAlert) GreenDarkText else Color.Red
+                    contentDescription = "Delete",
+                    tint = if (hasAlert) GreenDarkText else MaterialTheme.colorScheme.primary
                 )
             }
         }

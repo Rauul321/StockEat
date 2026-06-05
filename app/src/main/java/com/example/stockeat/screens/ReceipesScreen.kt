@@ -37,7 +37,7 @@ fun ReceipesScreen(
         topBar = {
             Column {
                 CenterAlignedTopAppBar(
-                    title = { Text("Recetas", style = MaterialTheme.typography.headlineMedium) },
+                    title = { Text("Recipes", style = MaterialTheme.typography.headlineMedium) },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
@@ -95,7 +95,7 @@ fun GenerateRecipesTab(
             Icon(Icons.Default.Restaurant, contentDescription = null)
             Spacer(Modifier.width(8.dp))
             Text(
-                text="Generar con mis ingredientes",
+                text="Generate with my ingredients",
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -108,12 +108,12 @@ fun GenerateRecipesTab(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
-                Text("¿Ingredientes específicos?", style = MaterialTheme.typography.titleSmall)
+                Text("Specify ingredients", style = MaterialTheme.typography.titleSmall)
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = manualInput,
                     onValueChange = { manualInput = it },
-                    label = { Text("Ej: huevos, harina, leche") },
+                    label = { Text("Ej: Eggs, Rice, Potatoes...") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -128,7 +128,7 @@ fun GenerateRecipesTab(
                 ) {
                     Icon(Icons.Default.Search, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Generar")
+                    Text("Generate")
                 }
             }
         }
@@ -136,7 +136,7 @@ fun GenerateRecipesTab(
         Spacer(modifier = Modifier.height(24.dp))
 
         when (val state = uiState) {
-            is RecipeUiState.Idle -> Text("Obtén nuevas ideas aquí", style = MaterialTheme.typography.bodyMedium)
+            is RecipeUiState.Idle -> Text("Get new ideas here", style = MaterialTheme.typography.bodyMedium)
             is RecipeUiState.Loading -> CircularProgressIndicator()
             is RecipeUiState.Success -> {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -162,7 +162,7 @@ fun SavedRecipesTab(
 ) {
     if (savedRecipes.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No tienes recetas guardadas aún", style = MaterialTheme.typography.bodyMedium)
+            Text("You don't have any saved recipes yet", style = MaterialTheme.typography.bodyMedium)
         }
     } else {
         LazyColumn(
@@ -216,11 +216,11 @@ fun RecipeCard(
                 
                 if (isSaved) {
                     IconButton(onClick = { onDelete?.invoke() }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
+                        Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color.Red)
                     }
                 } else {
                     IconButton(onClick = { onSave?.invoke() }) {
-                        Icon(Icons.Default.FavoriteBorder, contentDescription = "Guardar", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Default.FavoriteBorder, contentDescription = "Save", tint = MaterialTheme.colorScheme.primary)
                     }
                 }
                 
@@ -232,11 +232,11 @@ fun RecipeCard(
 
             if (expanded) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Ingredientes:", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                Text(text = "Ingredients:", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                 ingredients.forEach { Text("• $it", style = MaterialTheme.typography.bodySmall) }
                 
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Preparación:", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                Text(text = "Preparation:", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                 preparation.forEachIndexed { i, step -> Text("${i + 1}. $step", style = MaterialTheme.typography.bodySmall) }
             }
         }
