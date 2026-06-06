@@ -108,14 +108,14 @@ fun GenerateRecipesTab(
         }
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = { onGenerate(inventoryIngredients) },
+            onClick = { onGenerate(selectedIngredients.toList()) },
             modifier = Modifier.fillMaxWidth(),
-            enabled = uiState !is RecipeUiState.Loading && inventoryIngredients.isNotEmpty()
+            enabled = uiState !is RecipeUiState.Loading && selectedIngredients.isNotEmpty()
         ) {
             Icon(Icons.Default.Restaurant, contentDescription = null)
             Spacer(Modifier.width(8.dp))
             Text(
-                text="Generate with my ingredients",
+                text="Generate with selected (${selectedIngredients.size})",
                 style = MaterialTheme.typography.bodySmall
             )
         }
