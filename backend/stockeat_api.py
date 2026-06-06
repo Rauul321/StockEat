@@ -20,6 +20,17 @@ if not API_KEY:
 OPEN_FOOD_FACTS_URL = "https://world.openfoodfacts.org/api/v2/product/"
 
 client = genai.Client(api_key=API_KEY)
+
+API_SECRET = os.environ.get('API_SECRET')
+
+@app.before_request
+def check_api_key():
+    key = flask.request.headers.get('X-API-Key')
+    if key != API_SECRET:
+        return jsonify({"error": "No autorizado"}), 401
+    return None
+
+
 @app.route('/api/stockeat/generate-recipes', methods=['POST'])
 def generate_recipes():
     data = flask.request.get_json()

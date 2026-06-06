@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
 
 
-    private const val BASE_URL = "http://192.168.1.6:5000"
+    private const val BASE_URL = "https://stockeat.onrender.com"
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()

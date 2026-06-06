@@ -159,28 +159,33 @@ fun GenerateRecipesTab(
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
-        item {
-            when (val state = uiState) {
-                is RecipeUiState.Idle -> Text(
+        when (val state = uiState) {
+            is RecipeUiState.Idle -> item {
+                Text(
                     "Get new ideas here",
                     style = MaterialTheme.typography.bodyMedium
                 )
+            }
 
-                is RecipeUiState.Loading -> CircularProgressIndicator()
-                is RecipeUiState.Success -> {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        items(state.recipes) { recipe ->
-                            RecipeCard(
-                                name = recipe.name,
-                                ingredients = recipe.ingredients,
-                                preparation = recipe.preparation,
-                                onSave = { onSave(recipe) }
-                            )
-                        }
-                    }
+            is RecipeUiState.Loading -> item {
+                CircularProgressIndicator()
+            }
+
+            is RecipeUiState.Success -> {
+                items(state.recipes) { recipe ->
+                    RecipeCard(
+                        name = recipe.name,
+                        ingredients = recipe.ingredients,
+                        preparation = recipe.preparation,
+                        onSave = { onSave(recipe) }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                is RecipeUiState.Error -> Text(
+            }
+
+            is RecipeUiState.Error -> item {
+                Text(
                     "Error: ${state.message}",
                     color = MaterialTheme.colorScheme.error
                 )
