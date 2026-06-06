@@ -4,6 +4,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -31,7 +32,7 @@ fun ReceipesScreen(
     val savedRecipes by recipeViewModel.savedRecipes.collectAsState(initial = emptyList())
     
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Generar", "Guardadas")
+    val tabs = listOf("Generate", "Saved")
 
     Scaffold(
         topBar = {
@@ -79,14 +80,33 @@ fun GenerateRecipesTab(
     onGenerate: (List<String>) -> Unit,
     onSave: (Recipe) -> Unit
 ) {
+    val selectedIngredients = remember { mutableStateListOf<String>() }
     var manualInput by remember { mutableStateOf("") }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text("Select the ingredients to use:", style = MaterialTheme.typography.bodyMedium)
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            items(inventoryIngredients) { nombre ->
+                FilterChip(
+                    selected = selectedIngredients.contains(nombre),
+                    onClick = {
+                        if (selectedIngredients.contains(nombre)) selectedIngredients.remove(nombre)
+                        else selectedIngredients.add(nombre)
+                    },
+                    label = { Text(nombre) }
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = { onGenerate(inventoryIngredients) },
             modifier = Modifier.fillMaxWidth(),
@@ -201,6 +221,7 @@ fun RecipeCard(
             .clickable { expanded = !expanded }
             .animateContentSize(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(

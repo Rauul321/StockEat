@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -41,6 +42,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
     var purchaseQuantity by remember { mutableStateOf("") }
     var expiryDate by remember { mutableStateOf<Long?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var unit by remember { mutableStateOf("ud")}
 
     val datePickerState = rememberDatePickerState()
 
@@ -129,19 +131,29 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
             onDismissRequest = { 
                 showPurchaseModal = false 
                 expiryDate = null
+                unit = "ud"
             },
             title = { Text("Buy ${selectedIngredient!!.nombre}") },
             text = {
                 Column {
                     Text("Specify the product details:")
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    OutlinedTextField(
-                        value = purchaseQuantity,
-                        onValueChange = { purchaseQuantity = it },
-                        label = { Text("Quantity (${selectedIngredient!!.unidad})") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Row {
+                        OutlinedTextField(
+                            value = purchaseQuantity,
+                            onValueChange = { purchaseQuantity = it },
+                            label = { Text("Quantity (${selectedIngredient!!.unidad})") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        UnitDropdown(
+                            selectedUnit = unit,
+                            onUnitSelected = { unit = it },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                    }
+
                     
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -182,6 +194,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                     val qty = purchaseQuantity.toDoubleOrNull() ?: 0.0
                     viewModel.updateIngredient(selectedIngredient!!.copy(
                         cantidad = qty,
+                        unidad = unit,
                         toBuy = false,
                         expiryDate = expiryDate // Guardamos la fecha elegida
                     ))
@@ -207,7 +220,8 @@ fun ShoppingListItem(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(
             modifier = Modifier.padding(8.dp),

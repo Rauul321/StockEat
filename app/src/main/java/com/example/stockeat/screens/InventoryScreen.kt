@@ -284,146 +284,163 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
             )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // --- SECCIÓN: FORMULARIO ---
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { name = it },
-                        label = { Text("What have you bought?") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
                         OutlinedTextField(
-                            value = quantity,
-                            onValueChange = { quantity = it },
-                            label = { Text("Quantity") },
-                            modifier = Modifier.weight(1f)
+                            value = name,
+                            onValueChange = { name = it },
+                            label = { Text("What have you bought?") },
+                            modifier = Modifier.fillMaxWidth()
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        UnitDropdown(
-                            selectedUnit = selectedUnit,
-                            onUnitSelected = { selectedUnit = it },
-                            modifier = Modifier.weight(1f)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = quantity,
+                                onValueChange = { quantity = it },
+                                label = { Text("Quantity") },
+                                modifier = Modifier.weight(1f)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            UnitDropdown(
+                                selectedUnit = selectedUnit,
+                                onUnitSelected = { selectedUnit = it },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // --- Selector de Fecha ---
+                        OutlinedTextField(
+                            value = if (expiryDate != null) SimpleDateFormat(
+                                "dd/MM/yyyy",
+                                Locale.getDefault()
+                            ).format(Date(expiryDate!!)) else "Expiry Date",
+                            onValueChange = {},
+                            readOnly = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            trailingIcon = {
+                                IconButton(onClick = { showDatePicker = true }) {
+                                    Icon(
+                                        Icons.Default.DateRange,
+                                        contentDescription = "Select Date"
+                                    )
+                                }
+                            }
                         )
-                    }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // --- Selector de Fecha ---
-                    OutlinedTextField(
-                        value = if (expiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expiryDate!!)) else "Expiry Date",
-                        onValueChange = {},
-                        readOnly = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        trailingIcon = {
-                            IconButton(onClick = { showDatePicker = true }) {
-                                Icon(Icons.Default.DateRange, contentDescription = "Select Date")
+                        if (showDatePicker) {
+                            DatePickerDialog(
+                                onDismissRequest = { showDatePicker = false },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        expiryDate = datePickerState.selectedDateMillis
+                                        showDatePicker = false
+                                    }) { Text("Aceptar") }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = {
+                                        showDatePicker = false
+                                    }) { Text("Cancelar") }
+                                }
+                            ) {
+                                DatePicker(state = datePickerState)
                             }
                         }
-                    )
 
-                    if (showDatePicker) {
-                        DatePickerDialog(
-                            onDismissRequest = { showDatePicker = false },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    expiryDate = datePickerState.selectedDateMillis
-                                    showDatePicker = false
-                                }) { Text("Aceptar") }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                        // Dentro de InventoryScreen
+                        val cameraPermissionLauncher =
+                            rememberLauncherForActivityResult(
+                                ActivityResultContracts.RequestPermission()
+                            ) { isGranted ->
+                                if (isGranted) showScanner = true
+                            }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = {
+                                cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
                             }
                         ) {
-                            DatePicker(state = datePickerState)
+                            Text("Scan barcode", style = MaterialTheme.typography.bodyMedium)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(Icons.Default.DocumentScanner, contentDescription = "Escanear")
                         }
-                    }
 
-                    // Dentro de InventoryScreen
-                    val cameraPermissionLauncher =
-                        rememberLauncherForActivityResult(
-                            ActivityResultContracts.RequestPermission()
-                    ) { isGranted ->
-                        if (isGranted) showScanner = true
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Button(
-                        onClick = {
-                            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+                        if (showScanner) {
+                            BarcodeScannerView(onBarcodeDetected = { code ->
+                                showScanner = false
+                                viewModel.scanProduct(code) { productName, imageUrl ->
+                                    name = productName
+                                    scannedImageUrl = imageUrl
+                                }
+                            })
                         }
-                    ) {
-                        Text("Scan barcode", style = MaterialTheme.typography.bodyMedium)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(Icons.Default.DocumentScanner, contentDescription = "Escanear")
-                    }
-
-                    if (showScanner) {
-                        BarcodeScannerView(onBarcodeDetected = { code ->
-                            showScanner = false
-                            viewModel.scanProduct(code) { productName, imageUrl ->
-                                name = productName
-                                scannedImageUrl = imageUrl
-                            }
-                        })
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(
-                        onClick = {
-                            val qty = quantity.toDoubleOrNull() ?: 0.0
-                            if (name.isNotBlank()) {
-                                viewModel.addIngredient(name, qty, selectedUnit, false, expiryDate, scannedImageUrl)
-                                name = ""; quantity = ""; selectedUnit = "ud"; expiryDate = null; scannedImageUrl = null // Limpiar campos
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Add to Inventory",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                val qty = quantity.toDoubleOrNull() ?: 0.0
+                                if (name.isNotBlank()) {
+                                    viewModel.addIngredient(
+                                        name,
+                                        qty,
+                                        selectedUnit,
+                                        false,
+                                        expiryDate,
+                                        scannedImageUrl
+                                    )
+                                    name = ""; quantity = ""; selectedUnit = "ud"; expiryDate =
+                                        null; scannedImageUrl = null // Limpiar campos
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Add to Inventory",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
                     }
                 }
             }
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                // --- SECCIÓN: LISTADO ---
+                Text(text = "Your Products", style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- SECCIÓN: LISTADO ---
-            Text(text = "Your Products", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(listaIngredientes) { ingrediente ->
-                    // Llamamos a una función separada para la tarjeta
-                    IngredienteItem(
-                        ingrediente = ingrediente,
-                        onDelete = { viewModel.deleteIngredient(ingrediente) },
-                        onEditIngredient = {
-                            ingredientToEdit = ingrediente
-                            showModal = true
-                        },
-                        viewModel = viewModel,
-                        onConsume = {
-                            ingredientToConsume = ingrediente
-                            showQuantityModal = true
-                        }
-                    )
-                }
+            items(listaIngredientes) { ingrediente ->
+                // Llamamos a una función separada para la tarjeta
+                IngredienteItem(
+                    ingrediente = ingrediente,
+                    onDelete = { viewModel.deleteIngredient(ingrediente) },
+                    onEditIngredient = {
+                        ingredientToEdit = ingrediente
+                        showModal = true
+                    },
+                    viewModel = viewModel,
+                    onConsume = {
+                        ingredientToConsume = ingrediente
+                        showQuantityModal = true
+                    }
+                )
             }
         }
     }
