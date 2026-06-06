@@ -8,12 +8,10 @@ import requests
 
 from dotenv import load_dotenv
 
-# 2. Carga las variables del archivo .env en el sistema
 load_dotenv()
 
 app = flask.Flask(__name__)
 
-# 3. Ahora puedes llamarlas de forma segura usando os.environ
 API_KEY = os.environ.get('GEMINI_API_KEY')
 
 if not API_KEY:
@@ -48,7 +46,7 @@ def generate_recipes():
     )
 
     try:
-        # 3. Llamar a la API de Gemini (Modelo 2.5 Flash - rápido y gratuito)
+
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
@@ -61,7 +59,6 @@ def generate_recipes():
 
         recipes_object = json.loads(response.text)
 
-        # 4. Enviar el texto generado de vuelta a la app Android
         return jsonify({
             "status": "success",
             "recipes": recipes_object
@@ -92,19 +89,17 @@ def get_product(barcode):
 
         data = response.json()
 
-        # 3. Verificar si el producto realmente existe en la base de datos
+        # Verifica si el producto realmente existe en la base de datos
         if data.get("status") == 0 or "product" not in data:
             return jsonify({"status": "no_encontrado", "mensaje": "Producto no registrado"}), 404
 
-        # 4. Filtrar y estructurar los datos que le interesan a tu frontend
+        # 4. Filtra y estructura los datos
         producto = data["product"]
         resultado = {
             "status": "encontrado",
             "nombre": producto.get("product_name", "Producto desconocido"),
             "marca": producto.get("brands", "Genérico"),
-            # Las categorías ayudan a agrupar (ej. "Lácteos", "Legumbres")
             "categorias": producto.get("categories", ""),
-            # Por si quieres mostrar la foto en la despensa del usuario
             "imageUrl": producto.get("image_url", "")
         }
         print("--- DATOS ENVIADOS A ANDROID ---")

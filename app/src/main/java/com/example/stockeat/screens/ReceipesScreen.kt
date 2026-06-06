@@ -82,95 +82,109 @@ fun GenerateRecipesTab(
 ) {
     val selectedIngredients = remember { mutableStateListOf<String>() }
     var manualInput by remember { mutableStateOf("") }
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Select the ingredients to use:", style = MaterialTheme.typography.bodyMedium)
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        ) {
-            items(inventoryIngredients) { nombre ->
-                FilterChip(
-                    selected = selectedIngredients.contains(nombre),
-                    onClick = {
-                        if (selectedIngredients.contains(nombre)) selectedIngredients.remove(nombre)
-                        else selectedIngredients.add(nombre)
-                    },
-                    label = { Text(nombre) }
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(
-            onClick = { onGenerate(selectedIngredients.toList()) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = uiState !is RecipeUiState.Loading && selectedIngredients.isNotEmpty()
-        ) {
-            Icon(Icons.Default.Restaurant, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text="Generate with selected (${selectedIngredients.size})",
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text("Specify ingredients", style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = manualInput,
-                    onValueChange = { manualInput = it },
-                    label = { Text("Ej: Eggs, Rice, Potatoes...") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        val list = manualInput.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                        if (list.isNotEmpty()) onGenerate(list)
-                    },
-                    modifier = Modifier.align(Alignment.End),
-                    enabled = uiState !is RecipeUiState.Loading && manualInput.isNotBlank()
-                ) {
-                    Icon(Icons.Default.Search, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Generate")
+        item {
+            Text("Select the ingredients to use:", style = MaterialTheme.typography.bodyMedium)
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                items(inventoryIngredients) { nombre ->
+                    FilterChip(
+                        selected = selectedIngredients.contains(nombre),
+                        onClick = {
+                            if (selectedIngredients.contains(nombre)) selectedIngredients.remove(
+                                nombre
+                            )
+                            else selectedIngredients.add(nombre)
+                        },
+                        label = { Text(nombre) }
+                    )
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = { onGenerate(selectedIngredients.toList()) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = uiState !is RecipeUiState.Loading && selectedIngredients.isNotEmpty()
+            ) {
+                Icon(Icons.Default.Restaurant, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "Generate with selected (${selectedIngredients.size})",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
-        when (val state = uiState) {
-            is RecipeUiState.Idle -> Text("Get new ideas here", style = MaterialTheme.typography.bodyMedium)
-            is RecipeUiState.Loading -> CircularProgressIndicator()
-            is RecipeUiState.Success -> {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(state.recipes) { recipe ->
-                        RecipeCard(
-                            name = recipe.name,
-                            ingredients = recipe.ingredients,
-                            preparation = recipe.preparation,
-                            onSave = { onSave(recipe) }
-                        )
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Specify ingredients", style = MaterialTheme.typography.titleSmall)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = manualInput,
+                        onValueChange = { manualInput = it },
+                        label = { Text("Ej: Eggs, Rice, Potatoes...") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = {
+                            val list =
+                                manualInput.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                            if (list.isNotEmpty()) onGenerate(list)
+                        },
+                        modifier = Modifier.align(Alignment.End),
+                        enabled = uiState !is RecipeUiState.Loading && manualInput.isNotBlank()
+                    ) {
+                        Icon(Icons.Default.Search, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Generate")
                     }
                 }
             }
-            is RecipeUiState.Error -> Text("Error: ${state.message}", color = MaterialTheme.colorScheme.error)
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        item {
+            when (val state = uiState) {
+                is RecipeUiState.Idle -> Text(
+                    "Get new ideas here",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                is RecipeUiState.Loading -> CircularProgressIndicator()
+                is RecipeUiState.Success -> {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        items(state.recipes) { recipe ->
+                            RecipeCard(
+                                name = recipe.name,
+                                ingredients = recipe.ingredients,
+                                preparation = recipe.preparation,
+                                onSave = { onSave(recipe) }
+                            )
+                        }
+                    }
+                }
+
+                is RecipeUiState.Error -> Text(
+                    "Error: ${state.message}",
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
         }
     }
 }
@@ -221,7 +235,7 @@ fun RecipeCard(
             .clickable { expanded = !expanded }
             .animateContentSize(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors()
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
