@@ -76,6 +76,8 @@ def generate_recipes():
         }), 200
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
