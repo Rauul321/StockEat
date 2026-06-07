@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,9 +30,9 @@ fun ReceipesScreen(
 ) {
     val inventoryIngredients by inventoryViewModel.ingredients.collectAsState(initial = emptyList())
     val uiState by recipeViewModel.uiState.collectAsState()
-    val savedRecipes by recipeViewModel.savedRecipes.collectAsState(initial = emptyList())
+    val savedRecipes by recipeViewModel.savedRecipes.collectAsState(initial =emptyList())
     
-    var selectedTab by remember { mutableIntStateOf(0) }
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     val tabs = listOf("Generate", "Saved")
 
     Scaffold(
@@ -47,7 +48,7 @@ fun ReceipesScreen(
                     tabs.forEachIndexed { index, title ->
                         Tab(
                             selected = selectedTab == index,
-                            onClick = { selectedTab = index },
+                            onClick = {selectedTab = index },
                             text = { Text(title, style = MaterialTheme.typography.bodyMedium) }
                         )
                     }
@@ -59,9 +60,9 @@ fun ReceipesScreen(
             if (selectedTab == 0) {
                 GenerateRecipesTab(
                     inventoryIngredients = inventoryIngredients.map { it.nombre },
-                    uiState = uiState,
+                    recipeViewModel = recipeViewModel,
                     onGenerate = { recipeViewModel.generateRecipes(it) },
-                    onSave = { recipeViewModel.saveRecipe(it) }
+                    onSave = { recipeViewModel.saveRecipe(it)}
                 )
             } else {
                 SavedRecipesTab(
@@ -76,12 +77,13 @@ fun ReceipesScreen(
 @Composable
 fun GenerateRecipesTab(
     inventoryIngredients: List<String>,
-    uiState: RecipeUiState,
+    recipeViewModel: RecipeViewModel,
     onGenerate: (List<String>) -> Unit,
     onSave: (Recipe) -> Unit
 ) {
-    val selectedIngredients = remember { mutableStateListOf<String>() }
-    var manualInput by remember { mutableStateOf("") }
+    val uiState by recipeViewModel.uiState.collectAsState()
+    val selectedIngredients = recipeViewModel.selectedIngredients
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -99,12 +101,7 @@ fun GenerateRecipesTab(
                 items(inventoryIngredients) { nombre ->
                     FilterChip(
                         selected = selectedIngredients.contains(nombre),
-                        onClick = {
-                            if (selectedIngredients.contains(nombre)) selectedIngredients.remove(
-                                nombre
-                            )
-                            else selectedIngredients.add(nombre)
-                        },
+                        onClick = { recipeViewModel.toggleIngredient(nombre) },
                         label = { Text(nombre) }
                     )
                 }
@@ -135,8 +132,8 @@ fun GenerateRecipesTab(
                     Text("Specify ingredients", style = MaterialTheme.typography.titleSmall)
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                        value = manualInput,
-                        onValueChange = { manualInput = it },
+                        value = recipeViewModel.manualInput,
+                        onValueChange = { recipeViewModel.manualInput = it },
                         label = { Text("Ej: Eggs, Rice, Potatoes...") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
@@ -145,11 +142,11 @@ fun GenerateRecipesTab(
                     Button(
                         onClick = {
                             val list =
-                                manualInput.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                recipeViewModel.manualInput.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                             if (list.isNotEmpty()) onGenerate(list)
                         },
                         modifier = Modifier.align(Alignment.End),
-                        enabled = uiState !is RecipeUiState.Loading && manualInput.isNotBlank()
+                        enabled = uiState !is RecipeUiState.Loading && recipeViewModel.manualInput.isNotBlank()
                     ) {
                         Icon(Icons.Default.Search, contentDescription = null)
                         Spacer(Modifier.width(8.dp))

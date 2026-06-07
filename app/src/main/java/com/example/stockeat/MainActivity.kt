@@ -24,6 +24,11 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.activity.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.example.stockeat.dataaccess.IngredientDao
+import com.example.stockeat.dataaccess.RecipeDao
 import com.example.stockeat.screens.InventoryScreen
 import com.example.stockeat.screens.ReceipesScreen
 import com.example.stockeat.viewmodels.RecipeViewModel
@@ -34,6 +39,20 @@ import com.example.stockeat.viewmodels.InventoryViewModel
 import com.example.stockeat.viewmodels.ShoppingListViewModel
 import java.util.concurrent.TimeUnit
 
+class ViewModelFactory(
+    private val ingredientDao: IngredientDao,
+    private val recipeDao: RecipeDao
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return when {
+            modelClass.isAssignableFrom(InventoryViewModel::class.java) -> InventoryViewModel(ingredientDao) as T
+            modelClass.isAssignableFrom(RecipeViewModel::class.java) -> RecipeViewModel(recipeDao) as T
+            modelClass.isAssignableFrom(ShoppingListViewModel::class.java) -> ShoppingListViewModel(ingredientDao) as T
+            else -> throw IllegalArgumentException("Unknown ViewModel class")
+        }
+    }
+}
+
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object ShoppingList : Screen("shopping", "Shopping List", Icons.Default.ShoppingCart)
     object Inventory : Screen("inventory", "Inventory", Icons.Default.Home)
@@ -41,6 +60,19 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
 }
 
 class MainActivity : ComponentActivity() {
+    private val inventoryViewModel: InventoryViewModel by viewModels {
+        val db = StockEatDatabase.getDatabase(this)
+        ViewModelFactory(db.ingredientDao(), db.recipeDao())
+    }
+    private val recipeViewModel: RecipeViewModel by viewModels {
+        val db = StockEatDatabase.getDatabase(this)
+        ViewModelFactory(db.ingredientDao(), db.recipeDao())
+    }
+    private val shoppingListViewModel: ShoppingListViewModel by viewModels {
+        val db = StockEatDatabase.getDatabase(this)
+        ViewModelFactory(db.ingredientDao(), db.recipeDao())
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -67,13 +99,13 @@ class MainActivity : ComponentActivity() {
         val testRequest = OneTimeWorkRequestBuilder<ExpiryWorker>().build()
         WorkManager.getInstance(this).enqueue(testRequest)
 
-        val db = StockEatDatabase.getDatabase(this)
-        val ingredientDao = db.ingredientDao()
-        val recipeDao = db.recipeDao()
+        // val db = StockEatDatabase.getDatabase(this)
+        // val ingredientDao = db.ingredientDao()
+        // val recipeDao = db.recipeDao()
         
-        val inventoryViewModel = InventoryViewModel(ingredientDao)
-        val recipeViewModel = RecipeViewModel(recipeDao)
-        val shoppingListViewModel = ShoppingListViewModel(ingredientDao)
+        // val inventoryViewModel = InventoryViewModel(ingredientDao)
+        // val recipeViewModel = RecipeViewModel(recipeDao)
+        // val shoppingListViewModel = ShoppingListViewModel(ingredientDao)
 
         setContent {
             StockEatTheme {

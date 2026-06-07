@@ -1,5 +1,9 @@
 package com.example.stockeat.viewmodels
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stockeat.RecipeEntity
@@ -22,6 +26,9 @@ class RecipeViewModel(private val recipeDao: RecipeDao) : ViewModel() {
     private val _uiState = MutableStateFlow<RecipeUiState>(RecipeUiState.Idle)
     val uiState: StateFlow<RecipeUiState> = _uiState
 
+    val selectedIngredients = mutableStateListOf<String>()
+    var manualInput by mutableStateOf("")
+
     // Flow de recetas guardadas localmente
     val savedRecipes = recipeDao.getAllSavedRecipes()
 
@@ -34,6 +41,14 @@ class RecipeViewModel(private val recipeDao: RecipeDao) : ViewModel() {
             } catch (e: Exception) {
                 _uiState.value = RecipeUiState.Error(e.message ?: "Error desconocido")
             }
+        }
+    }
+
+    fun toggleIngredient(nombre: String) {
+        if (selectedIngredients.contains(nombre)) {
+            selectedIngredients.remove(nombre)
+        } else {
+            selectedIngredients.add(nombre)
         }
     }
 

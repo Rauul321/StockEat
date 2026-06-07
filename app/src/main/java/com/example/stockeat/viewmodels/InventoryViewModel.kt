@@ -58,7 +58,7 @@ class InventoryViewModel(private val dao: IngredientDao) : ViewModel() {
                     onResult(response.nombre ?: "", response.imageUrl)
                 }
             } catch (e: Exception) {
-                // Manejar error
+
             }
         }
     }
