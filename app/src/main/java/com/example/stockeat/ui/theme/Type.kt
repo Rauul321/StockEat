@@ -10,8 +10,6 @@ import androidx.compose.ui.unit.sp
 import com.example.stockeat.R
 
 
-// Usaremos fuentes del sistema con pesos modernos para evitar errores de certificados por ahora
-// "Sans-Serif" en Android es Roboto, pero configurada con pesos específicos se ve muy moderna
 var myfont = FontFamily(
     Font(R.font.quicksand)
 )

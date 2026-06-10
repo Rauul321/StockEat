@@ -1,8 +1,11 @@
-package com.example.stockeat
+package com.example.stockeat.data
 
-@androidx.room.Entity(tableName = "ingredients_table")
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "ingredients_table")
 data class Ingredient(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val nombre: String,
     val cantidad: Double,
     val unidad: String = "ud",

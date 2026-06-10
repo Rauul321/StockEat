@@ -9,7 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.stockeat.R
-import com.example.stockeat.StockEatDatabase
+import com.example.stockeat.database.StockEatDatabase
 import java.util.concurrent.TimeUnit
 
 class ExpiryWorker(

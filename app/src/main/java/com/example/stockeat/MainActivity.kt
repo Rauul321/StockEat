@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.stockeat.dataaccess.IngredientDao
 import com.example.stockeat.dataaccess.RecipeDao
+import com.example.stockeat.database.StockEatDatabase
 import com.example.stockeat.screens.InventoryScreen
 import com.example.stockeat.screens.ReceipesScreen
 import com.example.stockeat.viewmodels.RecipeViewModel

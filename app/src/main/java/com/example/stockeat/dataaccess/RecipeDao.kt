@@ -1,7 +1,7 @@
 package com.example.stockeat.dataaccess
 
 import androidx.room.*
-import com.example.stockeat.RecipeEntity
+import com.example.stockeat.data.RecipeEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

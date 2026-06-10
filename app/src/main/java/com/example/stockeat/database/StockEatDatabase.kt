@@ -1,10 +1,12 @@
-package com.example.stockeat
+package com.example.stockeat.database
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.stockeat.data.Ingredient
+import com.example.stockeat.data.RecipeEntity
 import com.example.stockeat.dataaccess.Converters
 import com.example.stockeat.dataaccess.IngredientDao
 import com.example.stockeat.dataaccess.RecipeDao

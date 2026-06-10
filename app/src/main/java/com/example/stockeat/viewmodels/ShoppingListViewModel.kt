@@ -3,7 +3,7 @@ package com.example.stockeat.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stockeat.dataaccess.IngredientDao
-import com.example.stockeat.Ingredient
+import com.example.stockeat.data.Ingredient
 import kotlinx.coroutines.launch
 
 class ShoppingListViewModel(private val dao: IngredientDao): ViewModel() {

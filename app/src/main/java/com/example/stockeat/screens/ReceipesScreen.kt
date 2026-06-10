@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.stockeat.viewmodels.InventoryViewModel
-import com.example.stockeat.RecipeEntity
+import com.example.stockeat.data.RecipeEntity
 import com.example.stockeat.models.Recipe
 import com.example.stockeat.viewmodels.RecipeUiState
 import com.example.stockeat.viewmodels.RecipeViewModel

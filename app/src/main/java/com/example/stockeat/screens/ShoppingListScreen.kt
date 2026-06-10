@@ -19,7 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
-import com.example.stockeat.Ingredient
+import com.example.stockeat.data.Ingredient
 import com.example.stockeat.R
 import com.example.stockeat.viewmodels.ShoppingListViewModel
 import java.text.SimpleDateFormat

@@ -2,7 +2,6 @@ package com.example.stockeat.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// --- NUEVA PALETA SEMÁNTICA: VERDE PASTEL & BLANCOS ---
 
 // Tonos Verdes
 val GreenPastelMain = Color(0xFFA5D6A7)    // Verde principal

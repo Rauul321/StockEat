@@ -1,4 +1,4 @@
-package com.example.stockeat
+package com.example.stockeat.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

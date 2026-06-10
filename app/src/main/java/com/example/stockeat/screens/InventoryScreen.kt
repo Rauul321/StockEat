@@ -1,19 +1,15 @@
 package com.example.stockeat.screens
 
-import android.R.attr.enabled
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,7 +21,6 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -48,7 +43,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -64,7 +58,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
-import com.example.stockeat.Ingredient
+import com.example.stockeat.data.Ingredient
 import com.example.stockeat.R
 import com.example.stockeat.viewmodels.InventoryViewModel
 import com.example.stockeat.ui.components.BarcodeScannerView
@@ -272,7 +266,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
 
     val datePickerState = rememberDatePickerState()
 
-    // Scaffold nos da la estructura básica (barra superior, botones flotantes, etc.)
+    // Scaffold es como la estructura básica
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -291,7 +285,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // --- SECCIÓN: FORMULARIO ---
+            // Formlario
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -325,7 +319,6 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // --- Selector de Fecha ---
                         OutlinedTextField(
                             value = if (expiryDate != null) SimpleDateFormat(
                                 "dd/MM/yyyy",
@@ -421,7 +414,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
             }
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                // --- SECCIÓN: LISTADO ---
+                //Listado de productos
                 Text(text = "Your Products", style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(8.dp))
             }

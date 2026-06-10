@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.stockeat.RecipeEntity
+import com.example.stockeat.data.RecipeEntity
 import com.example.stockeat.api_service.RetrofitClient
 import com.example.stockeat.dataaccess.RecipeDao
 import com.example.stockeat.models.Recipe
