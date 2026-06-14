@@ -118,7 +118,7 @@ class InventoryViewModel(private val dao: IngredientDao) : ViewModel() {
     }
 
     /**
-     * Marks an ingredient to be bought, effectively moving it to the shopping list view.
+     * Marks an ingredient to be bought, moving it to the shopping list view.
      *
      * @param ingredient The ingredient to move.
      */
@@ -129,7 +129,7 @@ class InventoryViewModel(private val dao: IngredientDao) : ViewModel() {
     }
 
     /**
-     * Permanently removes an ingredient from the database.
+     * Removes an ingredient from the database.
      *
      * @param ingredient The ingredient to delete.
      */
@@ -169,7 +169,7 @@ class InventoryViewModel(private val dao: IngredientDao) : ViewModel() {
     }
 
     /**
-     * Helper function to format a timestamp into a human-readable date string.
+     * Helper function to format a timestamp into a readable date string.
      *
      * @param timestamp The date timestamp in milliseconds.
      * @return Formatted date string (dd/MM/yyyy).

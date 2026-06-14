@@ -7,6 +7,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -22,6 +23,16 @@ fun BarcodeScannerView(onBarcodeDetected: (String) -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+
+    DisposableEffect(lifecycleOwner) {
+        onDispose {
+            try {
+                cameraProviderFuture.get().unbindAll()
+            } catch (e: Exception) {
+                Log.e("BarcodeScanner", "Error unbinding camera", e)
+            }
+        }
+    }
 
     AndroidView(
         factory = { ctx ->

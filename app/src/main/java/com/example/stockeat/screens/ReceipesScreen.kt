@@ -22,6 +22,14 @@ import com.example.stockeat.models.Recipe
 import com.example.stockeat.viewmodels.RecipeUiState
 import com.example.stockeat.viewmodels.RecipeViewModel
 
+/**
+ * Main screen for recipe exploration.
+ * Features a tabbed layout to switch between generating new recipes using AI
+ * and viewing locally saved favorite recipes.
+ *
+ * @param inventoryViewModel ViewModel for accessing user's current food stock.
+ * @param recipeViewModel ViewModel for recipe generation and persistence logic.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReceipesScreen(
@@ -74,6 +82,16 @@ fun ReceipesScreen(
     }
 }
 
+/**
+ * Tab content for generating new recipes.
+ * Allows users to select ingredients from their inventory or input them manually
+ * to request AI-generated recipe suggestions.
+ *
+ * @param inventoryIngredients List of ingredient names available in the inventory.
+ * @param recipeViewModel ViewModel managing the generation state.
+ * @param onGenerate Callback to trigger recipe generation with a list of strings.
+ * @param onSave Callback to save a generated recipe to the local database.
+ */
 @Composable
 fun GenerateRecipesTab(
     inventoryIngredients: List<String>,
@@ -191,6 +209,12 @@ fun GenerateRecipesTab(
     }
 }
 
+/**
+ * Tab content for viewing and managing saved recipes.
+ *
+ * @param savedRecipes List of recipes saved in the local database.
+ * @param onDelete Callback to remove a recipe from the database.
+ */
 @Composable
 fun SavedRecipesTab(
     savedRecipes: List<RecipeEntity>,
@@ -220,6 +244,17 @@ fun SavedRecipesTab(
     }
 }
 
+/**
+ * Card component to display recipe details including name, ingredients, and steps.
+ * Supports expanding to show more info and saving/deleting actions.
+ *
+ * @param name The recipe title.
+ * @param ingredients List of required ingredients.
+ * @param preparation Step-by-step preparation instructions.
+ * @param isSaved Whether this recipe is already in the local database.
+ * @param onSave Optional callback for saving the recipe.
+ * @param onDelete Optional callback for removing the recipe.
+ */
 @Composable
 fun RecipeCard(
     name: String,

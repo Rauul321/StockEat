@@ -26,6 +26,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * Main screen for the shopping list.
+ * Displays a form to add new items and a list of items currently marked to buy.
+ *
+ * @param viewModel The ViewModel handling shopping list state and business logic.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
@@ -199,6 +205,14 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
     }
 }
 
+/**
+ * Individual item row for the shopping list.
+ * Includes a checkbox to trigger the purchase process and a delete button.
+ *
+ * @param item The ingredient data for this item.
+ * @param onCheckedChange Callback invoked when the checkbox is clicked.
+ * @param onDelete Callback invoked when the delete icon is clicked.
+ */
 @Composable
 fun ShoppingListItem(
     item: Ingredient,

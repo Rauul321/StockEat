@@ -72,6 +72,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * Composable for editing an existing ingredient's details.
+ *
+ * @param ingredientId The ID of the ingredient to update.
+ * @param currentName Current name of the ingredient.
+ * @param currentQuantity Current stock quantity.
+ * @param currentUnit Current unit of measurement.
+ * @param currentExpiryDate Current expiration date timestamp.
+ * @param currentImageUrl Current image URL if available.
+ * @param onUpdate Callback invoked when the user saves the changes.
+ * @param onCancel Callback invoked to dismiss the editor without saving.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditIngredient(
@@ -131,7 +143,6 @@ fun EditIngredient(
             )
         }
 
-        // --- Botón Fecha Caducidad ---
         OutlinedTextField(
             value = if (expiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expiryDate!!)) else "Date not specified",
             onValueChange = {},
@@ -202,6 +213,13 @@ fun EditIngredient(
     }
 }
 
+/**
+ * A dropdown component for selecting units of measurement (e.g. kg, ml, ud).
+ *
+ * @param selectedUnit The currently selected unit string.
+ * @param onUnitSelected Callback invoked when a new unit is picked.
+ * @param modifier Layout modifier for the dropdown box.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnitDropdown(
@@ -245,6 +263,13 @@ fun UnitDropdown(
     }
 }
 
+/**
+ * Main screen for managing the food inventory.
+ * Displays a form to add products manually or via barcode scanning,
+ * followed by a list of all currently stocked ingredients.
+ *
+ * @param viewModel The ViewModel handling inventory state and CRUD operations.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventoryScreen(viewModel: InventoryViewModel) {
@@ -426,7 +451,6 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
             }
 
             items(listaIngredientes) { ingrediente ->
-                // Llamamos a una función separada para la tarjeta
                 IngredienteItem(
                     ingrediente = ingrediente,
                     onDelete = { viewModel.deleteIngredient(ingrediente) },
@@ -542,6 +566,17 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
     }
 }
 
+/**
+ * A card representing a single ingredient in the inventory list.
+ * Includes color-coding for expiry status and action buttons for editing,
+ * consuming, or deleting the item.
+ *
+ * @param ingrediente The ingredient data to display.
+ * @param onDelete Callback to delete the item.
+ * @param onEditIngredient Callback to open the editor for this item.
+ * @param viewModel ViewModel reference for date formatting helpers.
+ * @param onConsume Callback to open the consumption dialog.
+ */
 @Composable
 fun IngredienteItem(ingrediente: Ingredient, onDelete: () -> Unit, onEditIngredient: () -> Unit, viewModel: InventoryViewModel, onConsume: () -> Unit) {
 
@@ -563,7 +598,6 @@ fun IngredienteItem(ingrediente: Ingredient, onDelete: () -> Unit, onEditIngredi
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
 
-    // Color de texto e iconos: GreenDarkText ofrece el mejor contraste en los tonos pastel
     val contentColor = if (hasAlert) GreenDarkText else MaterialTheme.colorScheme.onSurface
 
     Card(

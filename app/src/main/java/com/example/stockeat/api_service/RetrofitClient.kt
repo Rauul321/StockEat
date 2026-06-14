@@ -7,8 +7,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-
-
     private const val BASE_URL = "https://stockeat.onrender.com"
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
