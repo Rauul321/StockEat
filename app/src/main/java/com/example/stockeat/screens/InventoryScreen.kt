@@ -380,8 +380,15 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                             BarcodeScannerView(onBarcodeDetected = { code ->
                                 showScanner = false
                                 viewModel.scanProduct(code) { productName, imageUrl ->
-                                    viewModel.nameInput = productName
-                                    viewModel.scannedImageUrlInput = imageUrl
+                                    // Automatic add with generic values
+                                    viewModel.addIngredient(
+                                        name = productName,
+                                        quantity = 1.0,
+                                        unit = "ud",
+                                        toBuy = false,
+                                        expiryDate = null,
+                                        imageUrl = imageUrl
+                                    )
                                 }
                             })
                         }

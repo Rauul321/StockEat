@@ -25,8 +25,6 @@ class InventoryViewModel(private val dao: IngredientDao) : ViewModel() {
      */
     val ingredients = dao.getAllIngredients()
 
-    // --- State for persisting input fields between rotations ---
-
     /** Current input for the name of the ingredient being added. */
     var nameInput by mutableStateOf("")
     /** Current input for the quantity of the ingredient being added. */
@@ -76,7 +74,7 @@ class InventoryViewModel(private val dao: IngredientDao) : ViewModel() {
      * @param name Name of the ingredient.
      * @param quantity Initial quantity.
      * @param unit Unit of measurement.
-     * @param toBuy Whether the item should start in the shopping list.
+     * @param toBuy Whether the item should be in the shopping list.
      * @param expiryDate Optional expiration date timestamp.
      * @param imageUrl Optional image URL for the product.
      */

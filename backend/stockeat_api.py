@@ -87,12 +87,12 @@ def get_product(barcode):
     Consulta la API de Open Food Facts para obtener información de un producto
     a partir de su código de barras.
     """
-    # 1. Validar un poco el código de barras (básico)
+    # Validar un poco el código de barras
     if not barcode.isdigit():
         return jsonify({"error": "El código de barras debe contener solo números."}), 400
 
     try:
-        # 2. Hacer la petición a la API externa
+        # Hacer la petición a la API externa
         # Se añade un User-Agent como buena práctica y requisito de muchas APIs
         headers = {'User-Agent': 'MiAppFlask - Web - Versión 1.0'}
         response = requests.get(f"{OPEN_FOOD_FACTS_URL}{barcode}.json", headers=headers, timeout=5)
@@ -106,7 +106,7 @@ def get_product(barcode):
         if data.get("status") == 0 or "product" not in data:
             return jsonify({"status": "no_encontrado", "mensaje": "Producto no registrado"}), 404
 
-        # 4. Filtra y estructura los datos
+        # Filtra y estructura los datos
         producto = data["product"]
         resultado = {
             "status": "encontrado",
