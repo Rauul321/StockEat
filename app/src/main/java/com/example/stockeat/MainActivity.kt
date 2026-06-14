@@ -40,10 +40,23 @@ import com.example.stockeat.viewmodels.InventoryViewModel
 import com.example.stockeat.viewmodels.ShoppingListViewModel
 import java.util.concurrent.TimeUnit
 
+/**
+ * Factory class for creating ViewModels with the required DAO dependencies.
+ *
+ * @property ingredientDao Data Access Object for ingredient-related database operations.
+ * @property recipeDao Data Access Object for recipe-related database operations.
+ */
 class ViewModelFactory(
     private val ingredientDao: IngredientDao,
     private val recipeDao: RecipeDao
 ) : ViewModelProvider.Factory {
+    /**
+     * Creates a new instance of the requested ViewModel class.
+     *
+     * @param modelClass The class of the ViewModel to create.
+     * @return A new created ViewModel instance.
+     * @throws IllegalArgumentException if the ViewModel class is unknown.
+     */
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(InventoryViewModel::class.java) -> InventoryViewModel(ingredientDao) as T
@@ -54,26 +67,48 @@ class ViewModelFactory(
     }
 }
 
+/**
+ * Represents a screen in the application for navigation purposes.
+ *
+ * @property route The unique navigation route string.
+ * @property label The display name of the screen.
+ * @property icon The icon associated with the screen in the navigation bar.
+ */
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object ShoppingList : Screen("shopping", "Shopping List", Icons.Default.ShoppingCart)
     object Inventory : Screen("inventory", "Inventory", Icons.Default.Home)
     object Receipes : Screen("receipes", "Receipes", Icons.Default.Menu)
 }
 
+/**
+ * The main activity of the StockEat application.
+ *
+ * This activity serves as the entry point and hosting container for the Jetpack Compose UI.
+ * It handles permission requests, initializes WorkManager for background tasks,
+ * and sets up the navigation host and bottom navigation bar.
+ */
 class MainActivity : ComponentActivity() {
+    /** ViewModel for managing inventory data and logic. */
     private val inventoryViewModel: InventoryViewModel by viewModels {
         val db = StockEatDatabase.getDatabase(this)
         ViewModelFactory(db.ingredientDao(), db.recipeDao())
     }
+    
+    /** ViewModel for managing recipe generation and saved recipes. */
     private val recipeViewModel: RecipeViewModel by viewModels {
         val db = StockEatDatabase.getDatabase(this)
         ViewModelFactory(db.ingredientDao(), db.recipeDao())
     }
+    
+    /** ViewModel for managing the shopping list. */
     private val shoppingListViewModel: ShoppingListViewModel by viewModels {
         val db = StockEatDatabase.getDatabase(this)
         ViewModelFactory(db.ingredientDao(), db.recipeDao())
     }
 
+    /**
+     * Initializes the activity, sets up background work, and defines the UI content.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -85,7 +120,7 @@ class MainActivity : ComponentActivity() {
             )
         }
 
-        // Programar la revisión de caducidad una vez al día
+        // Programa la revisión de caducidad una vez al día para enviar notificaciones
         val expiryWorkRequest = PeriodicWorkRequestBuilder<ExpiryWorker>(
             24, TimeUnit.HOURS
         ).build()
@@ -96,17 +131,9 @@ class MainActivity : ComponentActivity() {
             expiryWorkRequest
         )
 
-        // Tarea de prueba inmediata para verificar que las notificaciones funcionan
         val testRequest = OneTimeWorkRequestBuilder<ExpiryWorker>().build()
         WorkManager.getInstance(this).enqueue(testRequest)
 
-        // val db = StockEatDatabase.getDatabase(this)
-        // val ingredientDao = db.ingredientDao()
-        // val recipeDao = db.recipeDao()
-        
-        // val inventoryViewModel = InventoryViewModel(ingredientDao)
-        // val recipeViewModel = RecipeViewModel(recipeDao)
-        // val shoppingListViewModel = ShoppingListViewModel(ingredientDao)
 
         setContent {
             StockEatTheme {

@@ -40,7 +40,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -249,22 +252,18 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
     val listaIngredientes by viewModel.ingredients.collectAsState(initial = emptyList())
 
     // 2. Estado local: Para lo que el usuario escribe en los campos
-    var showModal by remember { mutableStateOf(false) }
-    var ingredientToEdit by remember { mutableStateOf<Ingredient?>(null) }
-    var name by remember { mutableStateOf("") }
-    var quantity by remember { mutableStateOf("") }
-    var selectedUnit by remember { mutableStateOf("ud") }
     var showScanner by remember { mutableStateOf(false) }
-    var expiryDate by remember { mutableStateOf<Long?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
-    var ingredientToConsume by remember { mutableStateOf<Ingredient?>(null) }
-    var showQuantityModal by remember { mutableStateOf(false) }
-    var consumptionAmount by remember { mutableStateOf("") }
-    var showExhaustedDialog by remember { mutableStateOf(false) }
-    var exhaustedIngredient by remember { mutableStateOf<Ingredient?>(null) }
-    var scannedImageUrl by remember { mutableStateOf<String?>(null) }
 
     val datePickerState = rememberDatePickerState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(viewModel.scannerErrorMessage) {
+        viewModel.scannerErrorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearScannerError()
+        }
+    }
 
     // Scaffold es como la estructura básica
     Scaffold(
@@ -276,7 +275,8 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                 )
 
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -293,8 +293,8 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         OutlinedTextField(
-                            value = name,
-                            onValueChange = { name = it },
+                            value = viewModel.nameInput,
+                            onValueChange = { viewModel.nameInput = it },
                             label = { Text("What have you bought?") },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -304,15 +304,15 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             OutlinedTextField(
-                                value = quantity,
-                                onValueChange = { quantity = it },
+                                value = viewModel.quantityInput,
+                                onValueChange = { viewModel.quantityInput = it },
                                 label = { Text("Quantity") },
                                 modifier = Modifier.weight(1f)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             UnitDropdown(
-                                selectedUnit = selectedUnit,
-                                onUnitSelected = { selectedUnit = it },
+                                selectedUnit = viewModel.selectedUnitInput,
+                                onUnitSelected = { viewModel.selectedUnitInput = it },
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -320,10 +320,10 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                         Spacer(modifier = Modifier.height(8.dp))
 
                         OutlinedTextField(
-                            value = if (expiryDate != null) SimpleDateFormat(
+                            value = if (viewModel.expiryDateInput != null) SimpleDateFormat(
                                 "dd/MM/yyyy",
                                 Locale.getDefault()
-                            ).format(Date(expiryDate!!)) else "Expiry Date",
+                            ).format(Date(viewModel.expiryDateInput!!)) else "Expiry Date",
                             onValueChange = {},
                             readOnly = true,
                             modifier = Modifier.fillMaxWidth(),
@@ -342,7 +342,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                                 onDismissRequest = { showDatePicker = false },
                                 confirmButton = {
                                     TextButton(onClick = {
-                                        expiryDate = datePickerState.selectedDateMillis
+                                        viewModel.expiryDateInput = datePickerState.selectedDateMillis
                                         showDatePicker = false
                                     }) { Text("Aceptar") }
                                 },
@@ -380,26 +380,25 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                             BarcodeScannerView(onBarcodeDetected = { code ->
                                 showScanner = false
                                 viewModel.scanProduct(code) { productName, imageUrl ->
-                                    name = productName
-                                    scannedImageUrl = imageUrl
+                                    viewModel.nameInput = productName
+                                    viewModel.scannedImageUrlInput = imageUrl
                                 }
                             })
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
                             onClick = {
-                                val qty = quantity.toDoubleOrNull() ?: 0.0
-                                if (name.isNotBlank()) {
+                                val qty = viewModel.quantityInput.toDoubleOrNull() ?: 0.0
+                                if (viewModel.nameInput.isNotBlank()) {
                                     viewModel.addIngredient(
-                                        name,
+                                        viewModel.nameInput,
                                         qty,
-                                        selectedUnit,
+                                        viewModel.selectedUnitInput,
                                         false,
-                                        expiryDate,
-                                        scannedImageUrl
+                                        viewModel.expiryDateInput,
+                                        viewModel.scannedImageUrlInput
                                     )
-                                    name = ""; quantity = ""; selectedUnit = "ud"; expiryDate =
-                                        null; scannedImageUrl = null // Limpiar campos
+                                    viewModel.resetInputs() // Limpiar campos
                                 }
                             },
                             modifier = Modifier.fillMaxWidth()
@@ -425,57 +424,57 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                     ingrediente = ingrediente,
                     onDelete = { viewModel.deleteIngredient(ingrediente) },
                     onEditIngredient = {
-                        ingredientToEdit = ingrediente
-                        showModal = true
+                        viewModel.ingredientToEdit = ingrediente
+                        viewModel.showEditModal = true
                     },
                     viewModel = viewModel,
                     onConsume = {
-                        ingredientToConsume = ingrediente
-                        showQuantityModal = true
+                        viewModel.ingredientToConsume = ingrediente
+                        viewModel.showConsumeToast = true
                     }
                 )
             }
         }
     }
 
-    if(showModal && ingredientToEdit != null) {
+    if(viewModel.showEditModal && viewModel.ingredientToEdit != null) {
         ModalBottomSheet(
             onDismissRequest = {
-                showModal = false
-                ingredientToEdit = null
+                viewModel.showEditModal = false
+                viewModel.ingredientToEdit = null
             }
         ) {
             EditIngredient(
-                ingredientId = ingredientToEdit!!.id,
-                currentName = ingredientToEdit!!.nombre,
-                currentQuantity = ingredientToEdit!!.cantidad,
-                currentUnit = ingredientToEdit!!.unidad,
-                currentExpiryDate = ingredientToEdit!!.expiryDate,
-                currentImageUrl = ingredientToEdit!!.imageUrl,
+                ingredientId = viewModel.ingredientToEdit!!.id,
+                currentName = viewModel.ingredientToEdit!!.nombre,
+                currentQuantity = viewModel.ingredientToEdit!!.cantidad,
+                currentUnit = viewModel.ingredientToEdit!!.unidad,
+                currentExpiryDate = viewModel.ingredientToEdit!!.expiryDate,
+                currentImageUrl = viewModel.ingredientToEdit!!.imageUrl,
                 onUpdate = { updatedIngredient ->
                     viewModel.updateIngredient(updatedIngredient)
-                    showModal = false
-                    ingredientToEdit = null
+                    viewModel.showEditModal = false
+                    viewModel.ingredientToEdit = null
                 },
-                onCancel = { showModal = false; ingredientToEdit = null }
+                onCancel = { viewModel.showEditModal = false; viewModel.ingredientToEdit = null }
             )
         }
     }
 
-    if (showQuantityModal && ingredientToConsume != null) {
+    if (viewModel.showConsumeToast && viewModel.ingredientToConsume != null) {
         AlertDialog(
             onDismissRequest = { 
-                showQuantityModal = false 
-                consumptionAmount = ""
+                viewModel.showConsumeToast = false 
+                viewModel.consumptionAmountInput = ""
             },
-            title = { Text("Consume ${ingredientToConsume!!.nombre}") },
+            title = { Text("Consume ${viewModel.ingredientToConsume!!.nombre}") },
             text = {
                 Column {
-                    Text("How much have you used? (Available: ${ingredientToConsume!!.cantidad} ${ingredientToConsume!!.unidad})")
+                    Text("How much have you used? (Available: ${viewModel.ingredientToConsume!!.cantidad} ${viewModel.ingredientToConsume!!.unidad})")
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
-                        value = consumptionAmount,
-                        onValueChange = { consumptionAmount = it },
+                        value = viewModel.consumptionAmountInput,
+                        onValueChange = { viewModel.consumptionAmountInput = it },
                         label = { Text("Amount to substract") },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -484,27 +483,27 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val amount = consumptionAmount.toDoubleOrNull() ?: 0.0
+                        val amount = viewModel.consumptionAmountInput.toDoubleOrNull() ?: 0.0
                         viewModel.consumeIngredient(
-                            ingredient = ingredientToConsume!!,
+                            ingredient = viewModel.ingredientToConsume!!,
                             amountToConsume = amount,
                             onExhausted = { updatedIngredient ->
-                                exhaustedIngredient = updatedIngredient
-                                showExhaustedDialog = true
+                                viewModel.exhaustedIngredient = updatedIngredient
+                                viewModel.showExhaustedDialog = true
                             }
                         )
-                        showQuantityModal = false
-                        consumptionAmount = ""
+                        viewModel.showConsumeToast = false
+                        viewModel.consumptionAmountInput = ""
                     },
-                    enabled = consumptionAmount.isNotBlank() && (consumptionAmount.toDoubleOrNull() ?: 0.0) > 0
+                    enabled = viewModel.consumptionAmountInput.isNotBlank() && (viewModel.consumptionAmountInput.toDoubleOrNull() ?: 0.0) > 0
                 ) {
                     Text("Confirm")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { 
-                    showQuantityModal = false
-                    consumptionAmount = ""
+                    viewModel.showConsumeToast = false
+                    viewModel.consumptionAmountInput = ""
                 }) {
                     Text("Cancel")
                 }
@@ -512,24 +511,24 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
         )
     }
 
-    if (showExhaustedDialog && exhaustedIngredient != null) {
+    if (viewModel.showExhaustedDialog && viewModel.exhaustedIngredient != null) {
         AlertDialog(
             onDismissRequest = { 
-                viewModel.updateIngredient(exhaustedIngredient!!)
-                showExhaustedDialog = false 
+                viewModel.updateIngredient(viewModel.exhaustedIngredient!!)
+                viewModel.showExhaustedDialog = false 
             },
             title = { Text("Product out of stock") },
-            text = { Text("The stock of ${exhaustedIngredient!!.nombre} ran out. Do you want to add the product to the shopping list?") },
+            text = { Text("The stock of ${viewModel.exhaustedIngredient!!.nombre} ran out. Do you want to add the product to the shopping list?") },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.moveToShoppingList(exhaustedIngredient!!)
-                    showExhaustedDialog = false
+                    viewModel.moveToShoppingList(viewModel.exhaustedIngredient!!)
+                    viewModel.showExhaustedDialog = false
                 }) { Text("Yes, add it") }
             },
             dismissButton = {
                 TextButton(onClick = {
-                    viewModel.updateIngredient(exhaustedIngredient!!)
-                    showExhaustedDialog = false
+                    viewModel.updateIngredient(viewModel.exhaustedIngredient!!)
+                    viewModel.showExhaustedDialog = false
                 }) { Text("No, leave it") }
             }
         )

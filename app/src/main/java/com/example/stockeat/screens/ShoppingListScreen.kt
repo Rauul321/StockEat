@@ -29,19 +29,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
-    var itemName by remember { mutableStateOf("") }
-    var itemQuantity by remember { mutableStateOf("1") }
-    var itemUnit by remember { mutableStateOf("ud") }
-    
     val shoppingItems by viewModel.ingredientsToBuy.collectAsState(initial = emptyList())
-    
-    var showPurchaseModal by remember { mutableStateOf(false) }
-    var selectedIngredient by remember { mutableStateOf<Ingredient?>(null) }
-    var purchaseQuantity by remember { mutableStateOf("") }
-    var expiryDate by remember { mutableStateOf<Long?>(null) }
-    var showDatePicker by remember { mutableStateOf(false) }
-    var unit by remember { mutableStateOf("ud")}
-
     val datePickerState = rememberDatePickerState()
 
     Scaffold(
@@ -60,7 +48,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // --- SECCIÓN: AÑADIR ITEM ---
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -71,8 +59,8 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         OutlinedTextField(
-                            value = itemName,
-                            onValueChange = { itemName = it },
+                            value = viewModel.itemNameInput,
+                            onValueChange = { viewModel.itemNameInput = it },
                             label = { Text("What do you need to buy?") },
                             modifier = Modifier.weight(1f),
                             singleLine = true
@@ -80,14 +68,14 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(
                             onClick = {
-                                if (itemName.isNotBlank()) {
-                                    val qty = itemQuantity.toDoubleOrNull() ?: 1.0
-                                    viewModel.addNewIngredientToBuy(itemName, qty, itemUnit)
-                                    itemName = ""; itemQuantity = "1"; itemUnit = "ud"
+                                if (viewModel.itemNameInput.isNotBlank()) {
+                                    val qty = viewModel.itemQuantityInput.toDoubleOrNull() ?: 1.0
+                                    viewModel.addNewIngredientToBuy(viewModel.itemNameInput, qty, viewModel.itemUnitInput)
+                                    viewModel.resetAddInputs()
                                 }
                             },
                             colors = IconButtonDefaults.filledIconButtonColors(),
-                            enabled = itemName.isNotBlank()
+                            enabled = viewModel.itemNameInput.isNotBlank()
                         ) {
                             Icon(Icons.Default.Add, contentDescription = "Add")
                         }
@@ -96,8 +84,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            // --- SECCIÓN: LISTADO ---
+            
             Text(text = "Products to buy", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -110,9 +97,10 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                         item = item,
                         onCheckedChange = { isChecked ->
                             if (isChecked) {
-                                selectedIngredient = item
-                                purchaseQuantity = item.cantidad.toString()
-                                showPurchaseModal = true
+                                viewModel.selectedIngredient = item
+                                viewModel.purchaseQuantityInput = item.cantidad.toString()
+                                viewModel.purchaseUnit = item.unidad
+                                viewModel.showPurchaseModal = true
                             }
                         },
                         onDelete = {
@@ -124,32 +112,32 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
         }
     }
 
-    if (showPurchaseModal && selectedIngredient != null) {
+    if (viewModel.showPurchaseModal && viewModel.selectedIngredient != null) {
         AlertDialog(
             onDismissRequest = { 
-                showPurchaseModal = false 
-                expiryDate = null
-                unit = "ud"
+                viewModel.resetPurchaseModal()
             },
-            title = { Text("Buy ${selectedIngredient!!.nombre}") },
+            title = { Text("Buy ${viewModel.selectedIngredient!!.nombre}") },
             text = {
                 Column {
                     Text("Specify the product details:")
                     Spacer(modifier = Modifier.height(16.dp))
-                    Row {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         OutlinedTextField(
-                            value = purchaseQuantity,
-                            onValueChange = { purchaseQuantity = it },
-                            label = { Text("Quantity (${selectedIngredient!!.unidad})") },
-                            modifier = Modifier.fillMaxWidth()
+                            value = viewModel.purchaseQuantityInput,
+                            onValueChange = { viewModel.purchaseQuantityInput = it },
+                            label = { Text("Quantity (${viewModel.selectedIngredient!!.unidad})") },
+                            modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         UnitDropdown(
-                            selectedUnit = unit,
-                            onUnitSelected = { unit = it },
+                            selectedUnit = viewModel.purchaseUnit,
+                            onUnitSelected = { viewModel.purchaseUnit = it },
                             modifier = Modifier.weight(1f)
                         )
-
                     }
 
                     
@@ -157,29 +145,29 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
 
                     // --- Selector de Fecha de Caducidad ---
                     OutlinedTextField(
-                        value = if (expiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expiryDate!!)) else "Sin fecha",
+                        value = if (viewModel.purchaseExpiryDate != null) SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(viewModel.purchaseExpiryDate!!)) else "Sin fecha",
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Expiry Date") },
                         modifier = Modifier.fillMaxWidth(),
                         trailingIcon = {
-                            IconButton(onClick = { showDatePicker = true }) {
+                            IconButton(onClick = { viewModel.showDatePicker = true }) {
                                 Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
                             }
                         }
                     )
 
-                    if (showDatePicker) {
+                    if (viewModel.showDatePicker) {
                         DatePickerDialog(
-                            onDismissRequest = { showDatePicker = false },
+                            onDismissRequest = { viewModel.showDatePicker = false },
                             confirmButton = {
                                 TextButton(onClick = {
-                                    expiryDate = datePickerState.selectedDateMillis
-                                    showDatePicker = false
+                                    viewModel.purchaseExpiryDate = datePickerState.selectedDateMillis
+                                    viewModel.showDatePicker = false
                                 }) { Text("Accept") }
                             },
                             dismissButton = {
-                                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                                TextButton(onClick = { viewModel.showDatePicker = false }) { Text("Cancel") }
                             }
                         ) {
                             DatePicker(state = datePickerState)
@@ -189,21 +177,22 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
             },
             confirmButton = {
                 TextButton(onClick = {
-                    val qty = purchaseQuantity.toDoubleOrNull() ?: 0.0
-                    viewModel.updateIngredient(selectedIngredient!!.copy(
+                    val qty = viewModel.purchaseQuantityInput.toDoubleOrNull() ?: 0.0
+
+                    // Updates the item setting "toBuy" parameter to false.
+                    // Once this action is completed, the item will appear in the inventory
+                    viewModel.updateIngredient(viewModel.selectedIngredient!!.copy(
                         cantidad = qty,
-                        unidad = unit,
+                        unidad = viewModel.purchaseUnit,
                         toBuy = false,
-                        expiryDate = expiryDate // Guardamos la fecha elegida
+                        expiryDate = viewModel.purchaseExpiryDate
                     ))
-                    showPurchaseModal = false
-                    expiryDate = null
+                    viewModel.resetPurchaseModal()
                 }) { Text("Add to Inventory") }
             },
             dismissButton = {
                 TextButton(onClick = { 
-                    showPurchaseModal = false
-                    expiryDate = null
+                    viewModel.resetPurchaseModal()
                 }) { Text("Cancel") }
             }
         )
